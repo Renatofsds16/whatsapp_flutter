@@ -10,10 +10,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseFirestore db = FirebaseFirestore.instance;
-  db.collection('usuario')
-      .doc('001')
-      .set({'nome':'Renato'});
 
   runApp(
     MaterialApp(
