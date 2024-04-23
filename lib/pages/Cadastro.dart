@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_flutter/model/usuario.dart';
 import 'package:whatsapp_flutter/pages/Home.dart';
+import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
 import 'package:whatsapp_flutter/ultius/ultius.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -70,12 +71,12 @@ class _CadastroState extends State<Cadastro> {
               db.collection('usuario')
                   .doc(firebaseAuth.user?.uid)
                   .set(usuario.toMap());
-              Navigator.pushReplacement(
+              Navigator.pushNamedAndRemoveUntil(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const Home()
-                  )
-              );
+                  RouteGenerate.ROTA_HOME,
+                  (context) => false)
+              ;
+              //Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_HOME);
 
             }
     ).catchError(

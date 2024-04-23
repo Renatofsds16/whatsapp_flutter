@@ -4,6 +4,7 @@ import 'package:whatsapp_flutter/abas/Chamadas.dart';
 import 'package:whatsapp_flutter/abas/Contatos.dart';
 import 'package:whatsapp_flutter/abas/Conversa.dart';
 import 'package:whatsapp_flutter/pages/Login.dart';
+import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -32,6 +33,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   _itemSelecionado(String itemEscolhido){
     switch (itemEscolhido){
       case 'Configuração':
+        Navigator.pushNamed(context, RouteGenerate.ROTA_CONFIGURACAO);
         break;
       case 'Sair':
         _deslogarUsuario();
@@ -41,9 +43,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
   _deslogarUsuario()async{
     await auth.signOut();
-    Navigator.pushReplacement(
+
+
+    Navigator.pushReplacementNamed(
         context,
-        MaterialPageRoute(builder: (context)=> const Login())
+        RouteGenerate.ROTA_LOGIN
     );
   }
 

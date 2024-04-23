@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_flutter/pages/Cadastro.dart';
 import 'package:whatsapp_flutter/pages/Home.dart';
+import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
 import 'package:whatsapp_flutter/ultius/ultius.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -25,7 +26,7 @@ class _LoginState extends State<Login> {
     //auth.signOut();
     if(usuario != null){
       print(usuario);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
+      Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_HOME);
     }
   }
 
@@ -66,7 +67,7 @@ class _LoginState extends State<Login> {
         _erroEmail = 'Credenciais invalida';
       });
     });
-    proximaTela(context, const Home());
+    Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_HOME);
   }
   @override
   void initState() {
@@ -126,7 +127,7 @@ class _LoginState extends State<Login> {
                 const Text('Não tem uma conta? '),
                 GestureDetector(
                     onTap: () {
-                      proximaTela(context, const Cadastro());
+                      Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_CADASTRO);
                     },
                     child: const Text(
                       'Cadastre-se',

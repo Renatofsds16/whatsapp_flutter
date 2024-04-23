@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:whatsapp_flutter/pages/Home.dart';
 import 'package:whatsapp_flutter/pages/Login.dart';
+import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -14,6 +15,8 @@ void main() async {
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      onGenerateRoute: RouteGenerate.generateRoute,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true
