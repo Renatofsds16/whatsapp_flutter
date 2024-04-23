@@ -62,7 +62,11 @@ class _CadastroState extends State<Cadastro> {
     await auth.createUserWithEmailAndPassword(
         email: usuario.email,
         password: usuario.senha
-    ).catchError((erro){print('Este e o error $erro');});
+    ).catchError(
+            (erro){
+              print(erro);
+            }
+    );
 
   }
 

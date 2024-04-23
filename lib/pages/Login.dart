@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_flutter/pages/Cadastro.dart';
+import 'package:whatsapp_flutter/pages/Home.dart';
 import 'package:whatsapp_flutter/ultius/ultius.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../model/usuario.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -12,8 +16,64 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerSenha = TextEditingController();
+  FirebaseAuth auth = FirebaseAuth.instance;
   String? _erroEmail;
-  String? _erroCadastro;
+  String? _erroSenha;
+
+  Future _verificarUsuarioLogado() async {
+    User? usuario = await auth.currentUser;
+    if(usuario != null){
+      print(usuario);
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const Home()));
+    }
+  }
+
+
+  _vericarCamposLogin(){
+    String email = _controllerEmail.text;
+    String senha = _controllerSenha.text;
+    if(email.isNotEmpty){
+      _erroEmail = null;
+      if(senha.isNotEmpty){
+        setState(() {
+          _erroSenha = null;
+        });
+        Usuario usuario = Usuario();
+        usuario.email = email;
+        usuario.senha = senha;
+        _logarUsuario(usuario);
+
+      }else{
+        setState(() {
+          _erroSenha = 'Por favor digite sua senha';
+        });
+
+      }
+    }else{
+      setState(() {
+        _erroEmail = 'Por favor digite seu Email';
+      });
+
+    }
+  }
+  _logarUsuario(Usuario usuario) async {
+    await auth.signInWithEmailAndPassword(
+        email: usuario.email,
+        password: usuario.senha
+    ).catchError((onError){
+      setState(() {
+        _erroEmail = 'Credenciais invalida';
+      });
+    });
+    proximaTela(context, const Home());
+  }
+  @override
+  void initState() {
+    _verificarUsuarioLogado();
+    super.initState();
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +114,7 @@ class _LoginState extends State<Login> {
                 controller: _controllerSenha,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                    errorText: _erroCadastro,
+                    errorText: _erroSenha,
                     border: const OutlineInputBorder(),
                     labelText: 'Digite sua senha'),
               ),
@@ -81,7 +141,7 @@ class _LoginState extends State<Login> {
                     padding:
                         const EdgeInsets.only(left: 16, top: 32, right: 16),
                     child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed:_vericarCamposLogin,
                         child: const Text(
                           'Entrar',
                           style: TextStyle(fontSize: 24),
