@@ -11,6 +11,7 @@ class Contatos extends StatefulWidget {
 
 class _ContatosState extends State<Contatos> {
   List<Contato> listaContatos = [
+    //dados para teste
     Contato('Jose Renato','https://firebasestorage.googleapis.com/v0/b/whatsapp-flutter-58532.appspot.com/o/perfil%2Fperfil3.jpg?alt=media&token=7083abde-509a-4184-a808-9418cfa37a40'),
     Contato('Taty','https://firebasestorage.googleapis.com/v0/b/whatsapp-flutter-58532.appspot.com/o/perfil%2Fperfil3.jpg?alt=media&token=7083abde-509a-4184-a808-9418cfa37a40'),
     Contato('Nice','https://firebasestorage.googleapis.com/v0/b/whatsapp-flutter-58532.appspot.com/o/perfil%2Fperfil1.jpg?alt=media&token=d23d2f01-ab8d-44f2-91f3-91fce476a140'),

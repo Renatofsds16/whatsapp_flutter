@@ -11,6 +11,7 @@ class Conversas extends StatefulWidget {
 
 class _ConversasState extends State<Conversas> {
   List<Conversa> listaConversas = [
+    //dados para teste
     Conversa('Jose Renato', 'Ola tudo bem',
         'https://firebasestorage.googleapis.com/v0/b/whatsapp-flutter-58532.appspot.com/o/perfil%2Fperfil3.jpg?alt=media&token=7083abde-509a-4184-a808-9418cfa37a40'),
     Conversa('Taty', 'Oi meu amor',
