@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:whatsapp_flutter/abas/Chamadas.dart';
 import 'package:whatsapp_flutter/abas/Contatos.dart';
 import 'package:whatsapp_flutter/abas/Conversa.dart';
+import 'package:whatsapp_flutter/pages/Login.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -12,6 +13,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
+  List<String> opcoes = ['Configuração','Sair'];
   FirebaseAuth auth = FirebaseAuth.instance;
   TabController? _tabController;
   String _email = '';
@@ -27,6 +29,24 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
       }
     }
   }
+  _itemSelecionado(String itemEscolhido){
+    switch (itemEscolhido){
+      case 'Configuração':
+        break;
+      case 'Sair':
+        _deslogarUsuario();
+        break;
+    }
+    print(itemEscolhido);
+  }
+  _deslogarUsuario()async{
+    await auth.signOut();
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context)=> const Login())
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +60,21 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
       appBar: AppBar(
         title: const Text('Whatsapp',style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.green,
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: _itemSelecionado,
+              itemBuilder: (context){
+                return opcoes.map(
+                        (String item){
+                          return PopupMenuItem<String>(
+                            value: item,
+                              child: Text(item)
+                          );
+                        }
+                ).toList();
+              }
+          )
+        ],
         bottom: TabBar(
           unselectedLabelColor: Colors.white60,
           indicatorWeight: 4,
