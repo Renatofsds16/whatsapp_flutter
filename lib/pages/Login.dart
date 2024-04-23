@@ -22,9 +22,10 @@ class _LoginState extends State<Login> {
 
   Future _verificarUsuarioLogado() async {
     User? usuario = await auth.currentUser;
+    //auth.signOut();
     if(usuario != null){
       print(usuario);
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const Home()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
     }
   }
 

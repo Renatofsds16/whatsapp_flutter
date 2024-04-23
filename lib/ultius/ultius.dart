@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 void proximaTela(BuildContext context,Widget widget){
-  Navigator.push(
+  Navigator.pushReplacement(
       context,
       MaterialPageRoute(
           builder: (context) => widget
