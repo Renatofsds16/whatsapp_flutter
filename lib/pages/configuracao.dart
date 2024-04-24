@@ -1,5 +1,10 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Configuracao extends StatefulWidget {
   const Configuracao({super.key});
@@ -10,7 +15,53 @@ class Configuracao extends StatefulWidget {
 
 class _ConfiguracaoState extends State<Configuracao> {
   TextEditingController _controllerNomeConfig = TextEditingController();
+  Reference storage = FirebaseStorage.instance.ref();
   String? _erroNomeConfig;
+  File? _imagem;
+  User? _usuarioLogado;
+
+  Future _recuperaImagem(bool recurso) async {
+    XFile? imagemSelecionada;
+    ImagePicker imagePicker = ImagePicker();
+    if (recurso) {
+      imagemSelecionada =
+          await imagePicker.pickImage(source: ImageSource.camera);
+    } else {
+      imagemSelecionada =
+          await imagePicker.pickImage(source: ImageSource.gallery);
+    }
+
+    if (imagemSelecionada != null) {
+      setState(() {
+        _imagem = File(imagemSelecionada!.path);
+        if (_imagem != null) {
+          _uploadImagem();
+        }
+      });
+    }
+  }
+
+  _uploadImagem() async {
+    storage
+        .child('perfil')
+        .child('usuario')
+        .child('${_usuarioLogado!.uid}.jpg')
+        .putFile(_imagem!);
+
+  }
+
+  Future _recuperarUsuarioLogado() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    _usuarioLogado = await auth.currentUser;
+  }
+
+
+  @override
+  void initState() {
+    _recuperarUsuarioLogado();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,8 +81,7 @@ class _ConfiguracaoState extends State<Configuracao> {
                   const CircleAvatar(
                     radius: 100,
                     backgroundColor: Colors.grey,
-                    backgroundImage: NetworkImage(
-                        'https://firebasestorage.googleapis.com/v0/b/whatsapp-flutter-58532.appspot.com/o/perfil%2Fperfil3.jpg?alt=media&token=7083abde-509a-4184-a808-9418cfa37a40'),
+                    backgroundImage: NetworkImage('https://firebasestorage.googleapis.com/v0/b/whatsapp-flutter-58532.appspot.com/o/perfil%2Fperfil5.jpg?alt=media&token=68da9248-5126-43a4-8aca-2d8852cbfd37'),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -40,11 +90,16 @@ class _ConfiguracaoState extends State<Configuracao> {
                           child: Padding(
                               padding: const EdgeInsets.all(16),
                               child: ElevatedButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _recuperaImagem(true);
+                                  },
                                   child: const Text('Camera')))),
                       Expanded(
                           child: ElevatedButton(
-                              onPressed: () {}, child: const Text('Galeria'))),
+                              onPressed: () {
+                                _recuperaImagem(false);
+                              },
+                              child: const Text('Galeria'))),
                     ],
                   ),
                   Padding(
@@ -58,8 +113,13 @@ class _ConfiguracaoState extends State<Configuracao> {
                           labelText: 'Digite seu nome'),
                     ),
                   ),
-                  ElevatedButton(onPressed: (){}, child: const Text('Salvar'))
-
+                  Row(children: [
+                    Expanded(
+                        child: ElevatedButton(
+                      onPressed: () {},
+                      child: Text('Salvar'),
+                    ))
+                  ])
                 ],
               ),
             ),
