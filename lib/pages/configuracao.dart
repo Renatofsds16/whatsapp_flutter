@@ -1,10 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Configuracao extends StatefulWidget {
   const Configuracao({super.key});
@@ -14,7 +13,8 @@ class Configuracao extends StatefulWidget {
 }
 
 class _ConfiguracaoState extends State<Configuracao> {
-  TextEditingController _controllerNomeConfig = TextEditingController();
+  final TextEditingController _controllerNomeConfig = TextEditingController();
+  String? _urlPerifl;
   Reference storage = FirebaseStorage.instance.ref();
   String? _erroNomeConfig;
   File? _imagem;
@@ -42,17 +42,48 @@ class _ConfiguracaoState extends State<Configuracao> {
   }
 
   _uploadImagem() async {
-    storage
+    Reference arquivo = storage
         .child('perfil')
         .child('usuario')
-        .child('${_usuarioLogado!.uid}.jpg')
-        .putFile(_imagem!);
+        .child('${_usuarioLogado!.uid}.jpg');
+    TaskSnapshot taskSnapshot = await arquivo.putFile(_imagem!);
+    _recuperarUrlImagePerfil(taskSnapshot);
 
+
+  }
+  _recuperarUrlImagePerfil(TaskSnapshot taskSnapshot)async{
+    String url = await taskSnapshot.ref.getDownloadURL();
+    _atualizarImagemFirestore(url);
+      setState(() {
+        _urlPerifl = url;
+      });
+  }
+  _atualizarImagemFirestore(String url){
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    Map<String,dynamic> map = {
+      'urlImagem':url
+    };
+    db.collection('usuario').doc(_usuarioLogado?.uid).update(map);
+  }
+  _atualizarNomeFirestore(){
+    String nome = _controllerNomeConfig.text;
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    Map<String,dynamic> map = {
+      'nome': nome
+    };
+    db.collection('usuario').doc(_usuarioLogado?.uid).update(map);
   }
 
   Future _recuperarUsuarioLogado() async {
+    FirebaseFirestore db = FirebaseFirestore.instance;
     FirebaseAuth auth = FirebaseAuth.instance;
-    _usuarioLogado = await auth.currentUser;
+    _usuarioLogado = auth.currentUser;
+    DocumentSnapshot snap = await db.collection('usuario').doc(_usuarioLogado?.uid).get();
+    String url = snap.get('urlImagem');
+
+    setState(() {
+      _urlPerifl = url;
+    });
   }
 
 
@@ -78,10 +109,10 @@ class _ConfiguracaoState extends State<Configuracao> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 100,
                     backgroundColor: Colors.grey,
-                    backgroundImage: NetworkImage('https://firebasestorage.googleapis.com/v0/b/whatsapp-flutter-58532.appspot.com/o/perfil%2Fperfil5.jpg?alt=media&token=68da9248-5126-43a4-8aca-2d8852cbfd37'),
+                    backgroundImage: _urlPerifl != null ? NetworkImage(_urlPerifl!): null,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -117,7 +148,7 @@ class _ConfiguracaoState extends State<Configuracao> {
                     Expanded(
                         child: ElevatedButton(
                       onPressed: () {},
-                      child: Text('Salvar'),
+                      child: const Text('Salvar'),
                     ))
                   ])
                 ],
