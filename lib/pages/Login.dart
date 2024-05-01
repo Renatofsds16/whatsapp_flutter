@@ -1,11 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:whatsapp_flutter/model/usuario.dart';
 import 'package:whatsapp_flutter/pages/Cadastro.dart';
 import 'package:whatsapp_flutter/pages/Home.dart';
-import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
-import 'package:whatsapp_flutter/ultius/ultius.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../Helper/HelpFirebaseAuth.dart';
 
-import '../model/usuario.dart';
+
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,119 +15,72 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController _controllerEmail = TextEditingController();
-  final TextEditingController _controllerSenha = TextEditingController();
-  FirebaseAuth auth = FirebaseAuth.instance;
-  String? _erroEmail;
-  String? _erroSenha;
+  final HelpFirebaseAuth _helpFirebaseAuth = HelpFirebaseAuth();
+  final TextEditingController _controllerEmailLogin = TextEditingController();
+  final TextEditingController _controllerSenhaLogin = TextEditingController();
+  String? _errorEmail;
+  String? _errorSenha;
 
-  Future _verificarUsuarioLogado() async {
-    User? usuario = await auth.currentUser;
-    //auth.signOut();
-    if(usuario != null){
-      print(usuario);
-      Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_HOME);
-    }
-  }
-
-
-  _vericarCamposLogin(){
-    String email = _controllerEmail.text;
-    String senha = _controllerSenha.text;
-    if(email.isNotEmpty){
-      _erroEmail = null;
-      if(senha.isNotEmpty){
-        setState(() {
-          _erroSenha = null;
-        });
-        Usuario usuario = Usuario();
-        usuario.email = email;
-        usuario.senha = senha;
-        _logarUsuario(usuario);
-
-      }else{
-        setState(() {
-          _erroSenha = 'Por favor digite sua senha';
-        });
-
-      }
-    }else{
-      setState(() {
-        _erroEmail = 'Por favor digite seu Email';
-      });
-
-    }
-  }
-  _logarUsuario(Usuario usuario) async {
-    await auth.signInWithEmailAndPassword(
-        email: usuario.email,
-        password: usuario.senha
-    ).catchError((onError){
-      setState(() {
-        _erroEmail = 'Credenciais invalida';
-      });
-    });
-    Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_HOME);
-  }
   @override
   void initState() {
     _verificarUsuarioLogado();
     super.initState();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        centerTitle: true,
         title: const Text(
           'Login',
           style: TextStyle(color: Colors.white),
         ),
+        backgroundColor: Colors.green,
       ),
       body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
-                padding: const EdgeInsets.only(top: 32),
+                padding: const EdgeInsets.all(16),
                 child: Image.asset(
                   'images/logo.png',
                   width: 200,
-                  height: 200,
+                  height: 180,
                 )),
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
-                controller: _controllerEmail,
-                keyboardType: TextInputType.emailAddress,
+                controller: _controllerEmailLogin,
                 decoration: InputDecoration(
-                    errorText: _erroEmail,
+                    errorText: _errorEmail,
                     border: const OutlineInputBorder(),
-                    labelText: 'Digite Seu Email'),
+                    labelText: 'Digite seu email'),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
                 obscureText: true,
-                controller: _controllerSenha,
-                keyboardType: TextInputType.number,
+                controller: _controllerSenhaLogin,
                 decoration: InputDecoration(
-                    errorText: _erroSenha,
+
+                    errorText: _errorSenha,
                     border: const OutlineInputBorder(),
                     labelText: 'Digite sua senha'),
+                keyboardType: TextInputType.number,
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Não tem uma conta? '),
+                const Text('Não tem conta? '),
                 GestureDetector(
                     onTap: () {
-                      Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_CADASTRO);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Cadastro()));
                     },
                     child: const Text(
                       'Cadastre-se',
@@ -135,26 +88,71 @@ class _LoginState extends State<Login> {
                     )),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
                 Expanded(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(left: 16, top: 32, right: 16),
-                    child: ElevatedButton(
-                        onPressed:_vericarCamposLogin,
-                        child: const Text(
-                          'Entrar',
-                          style: TextStyle(fontSize: 24),
-                        )),
+                  child: ElevatedButton(
+                    onPressed: _validarCampos,
+                    child: const Text('Login'),
                   ),
                 ),
-              ],
+              ]),
             )
           ],
         ),
       ),
     );
+  }
+
+  _validarCampos() {
+    String email = _controllerEmailLogin.text;
+    String senha = _controllerSenhaLogin.text;
+    if (email.isNotEmpty) {
+      if (email.endsWith('@gmail.com')) {
+        _errorEmail = null;
+        if (senha.isNotEmpty) {
+          //loga usuario
+          Usuario usuario = Usuario();
+          usuario.email = email;
+          usuario.senha = senha;
+          _loginUser(usuario);
+        } else {
+          setState(() {
+            _errorSenha =
+                'Senha invalida! sua senha tem pelos menos 6 caractere.';
+          });
+        }
+      } else {
+        setState(() {
+          _errorEmail = 'Email invalido digite "exemple@gmail,com"';
+        });
+      }
+    } else {
+      setState(() {
+        _errorEmail = 'Esse campo nao pode ficar vazio';
+      });
+    }
+  }
+
+  _loginUser(Usuario usuario) async {
+    UserCredential user = await _helpFirebaseAuth
+        .loginUser(usuario.email, usuario.senha)
+        .then((firebaseUser) {
+      Navigator.pushReplacementNamed(context, '/home');
+      return firebaseUser;
+    }).catchError((error){
+      setState(() {
+        _errorEmail = 'credenciais invalidas';
+      });
+    });
+
+  }
+
+  _verificarUsuarioLogado() async {
+    User? user = await _helpFirebaseAuth.currentUser();
+    if (user != null) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
   }
 }

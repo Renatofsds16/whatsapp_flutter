@@ -2,15 +2,23 @@ class Usuario{
   String _nome = '';
   String _email = '';
   String _senha = '';
-  String urlImagem = '';
+  String _urlFoto = '';
+
 
   Usuario();
 
   Map<String,dynamic> toMap(){
     Map<String,dynamic> map = {
-      'nome': nome
+      'nome': nome,
+      'email': email
     };
     return map;
+  }
+
+  String get urlFoto => _urlFoto;
+
+  set urlFoto(String value) {
+    _urlFoto = value;
   }
 
   String get senha => _senha;

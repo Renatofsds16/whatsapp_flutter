@@ -1,10 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:whatsapp_flutter/abas/Chamadas.dart';
 import 'package:whatsapp_flutter/abas/Contatos.dart';
-import 'package:whatsapp_flutter/abas/Conversa.dart';
+import 'package:whatsapp_flutter/abas/Conversas.dart';
+import 'package:whatsapp_flutter/pages/Configuracoes.dart';
 import 'package:whatsapp_flutter/pages/Login.dart';
-import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
+
+import '../Helper/HelpFirebaseAuth.dart';
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,63 +17,54 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
-  List<String> opcoes = ['Configuração','Sair'];
-  FirebaseAuth auth = FirebaseAuth.instance;
+  HelpFirebaseAuth _helpFirebaseAuth = HelpFirebaseAuth();
+  List<String> opcoes = [
+    'Configuracoes',
+    'Sair',
+  ];
   TabController? _tabController;
-  String _email = '';
-
-  Future dados()async{
-    User? usuario = await auth.currentUser;
-    if(usuario != null){
-      var emailUsuarioLogado = usuario.email;
-      if(emailUsuarioLogado != null){
-        setState(() {
-          _email = emailUsuarioLogado;
-        });
-      }
-    }
-  }
-  _itemSelecionado(String itemEscolhido){
-    switch (itemEscolhido){
-      case 'Configuração':
-        Navigator.pushNamed(context, RouteGenerate.ROTA_CONFIGURACAO);
-        break;
-      case 'Sair':
-        _deslogarUsuario();
-        break;
-    }
-    print(itemEscolhido);
-  }
-  _deslogarUsuario()async{
-    await auth.signOut();
-
-
-    Navigator.pushReplacementNamed(
-        context,
-        RouteGenerate.ROTA_LOGIN
-    );
-  }
 
   @override
   void initState() {
-    super.initState();
-    dados();
     _tabController = TabController(length: 3, vsync: this);
+    recuperarDadosUsuario();
+    super.initState();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Whatsapp',style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.green,
+        centerTitle: true,
+        title: const Text('Whatsapp',style: TextStyle(color: Colors.white),),
+        bottom: TabBar(
+          indicatorColor: Colors.white,
+          controller: _tabController,
+          labelColor: Colors.white,
+          labelStyle: TextStyle(fontSize: 16),
+          tabs: const [
+          Tab(
+            text: 'Conversas',
+            icon: Icon(Icons.message),
+          ),
+          Tab(
+            text: 'Contatos',
+            icon: Icon(Icons.perm_contact_cal_rounded),
+          ),
+            Tab(
+              text: 'Chamadas',
+              icon: Icon(Icons.call),
+            ),
+        ],
+
+        ),
         actions: [
-          PopupMenuButton<String>(
-            onSelected: _itemSelecionado,
+          PopupMenuButton(
+            onSelected: escolhaUsuario,
               itemBuilder: (context){
                 return opcoes.map(
                         (String item){
-                          return PopupMenuItem<String>(
+                          return PopupMenuItem(
                             value: item,
                               child: Text(item)
                           );
@@ -79,23 +73,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
               }
           )
         ],
-        bottom: TabBar(
-          unselectedLabelColor: Colors.white60,
-          indicatorWeight: 4,
-          labelStyle: const TextStyle(
-            fontSize: 20,
-            color: Colors.white,
-
-
-          ),
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Conversas',),
-            Tab(text: 'Contatos',),
-            Tab(text: 'Chamadas',),
-          ],
-        ),
       ),
       body: TabBarView(
         controller: _tabController,
@@ -104,7 +81,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
           Contatos(),
           Chamadas()
         ],
-      )
+      ),
     );
+  }
+  recuperarDadosUsuario(){
+
+  }
+  escolhaUsuario(String escolha){
+    if(escolha == opcoes[0]){
+      Navigator.pushNamed(context, '/configuracoes');
+
+    }
+    if(escolha == opcoes[1]){
+      _helpFirebaseAuth.exitUser();
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 }

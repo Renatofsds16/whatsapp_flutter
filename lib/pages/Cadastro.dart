@@ -1,10 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_flutter/model/usuario.dart';
 import 'package:whatsapp_flutter/pages/Home.dart';
-import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
-import 'package:whatsapp_flutter/ultius/ultius.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../Helper/HelpFirebaseAuth.dart';
+import '../Helper/HelpFirebaseCloudFirestore.dart';
 
 class Cadastro extends StatefulWidget {
   const Cadastro({super.key});
@@ -14,108 +14,42 @@ class Cadastro extends StatefulWidget {
 }
 
 class _CadastroState extends State<Cadastro> {
-  TextEditingController _controllerEmailCadastro = TextEditingController();
-  TextEditingController _controllerSenhaCadastro = TextEditingController();
-  TextEditingController _controllerNomeCadastro = TextEditingController();
-  String? _erroNomeCadastro;
-  String? _erroEmailCadastro;
-  String? _erroSenhaCadastro;
-
-  bool _validarCampos(){
-    String nome = _controllerNomeCadastro.text;
-    String email = _controllerEmailCadastro.text;
-    String senha = _controllerSenhaCadastro.text;
-    if(nome.isNotEmpty){
-      _erroNomeCadastro = null;
-      if(email.isNotEmpty){
-        _erroEmailCadastro = null;
-        if(senha.isNotEmpty){
-          setState(() {
-            _erroSenhaCadastro = null;
-          });
-          Usuario usuario = Usuario();
-          usuario.nome = nome;
-          usuario.email = email;
-          usuario.senha = senha;
-          _cadastraUsuario(usuario);
-          return true;
-        }else{
-          setState(() {
-            _erroSenhaCadastro = 'Por favor digite seu Email';
-          });
-          return false;
-        }
-      }else{
-        setState(() {
-          _erroEmailCadastro = 'Por favor digite seu Email';
-        });
-        return false;
-      }
-    }else{
-      setState(() {
-        _erroNomeCadastro = 'Por favor digite seu nome';
-      });
-      return false;
-    }
-  }
-
-  _cadastraUsuario(Usuario usuario) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-
-    await auth.createUserWithEmailAndPassword(
-        email: usuario.email,
-        password: usuario.senha
-    ).then(
-            (firebaseAuth ){
-              FirebaseFirestore db = FirebaseFirestore.instance;
-              db.collection('usuario')
-                  .doc(firebaseAuth.user?.uid)
-                  .set(usuario.toMap());
-              Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  RouteGenerate.ROTA_HOME,
-                  (context) => false)
-              ;
-              //Navigator.pushReplacementNamed(context, RouteGenerate.ROTA_HOME);
-
-            }
-    ).catchError(
-            (erro){
-              print(erro);
-            }
-    );
-
-  }
-
-
+  final HelpFirebaseAuth _helpFirebaseAuth = HelpFirebaseAuth();
+  HelpFirebaseCloudFirestore _helpFirebaseCloudFirestore = HelpFirebaseCloudFirestore();
+  final TextEditingController _controllerNome = TextEditingController();
+  final TextEditingController _controllerEmail = TextEditingController();
+  final TextEditingController _controllerSenha = TextEditingController();
+  String _menssagem = '';
+  String? _errorName;
+  String? _errorEmail;
+  String? _errorSenha;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
+        centerTitle: true,
         title: const Text(
-          'Cadastre-se',
+          "Faça seu cadastro",
           style: TextStyle(color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
-                padding: const EdgeInsets.only(top: 32),
+                padding: const EdgeInsets.all(16),
                 child: Image.asset(
                   'images/logo.png',
                   width: 200,
-                  height: 200,
+                  height: 180,
                 )),
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
-                controller: _controllerNomeCadastro,
-                keyboardType: TextInputType.name,
+                controller: _controllerNome,
                 decoration: InputDecoration(
-                  errorText: _erroNomeCadastro,
+                    errorText: _errorName,
                     border: const OutlineInputBorder(),
                     labelText: 'Digite seu nome'),
               ),
@@ -123,47 +57,99 @@ class _CadastroState extends State<Cadastro> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
-                controller: _controllerEmailCadastro,
-                keyboardType: TextInputType.emailAddress,
+                controller: _controllerEmail,
                 decoration: InputDecoration(
-                  errorText: _erroEmailCadastro,
+                    errorText: _errorEmail,
                     border: const OutlineInputBorder(),
-                    labelText: 'Digite Seu Email'),
+                    labelText: 'Digite seu email'),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
-                controller: _controllerSenhaCadastro,
-                keyboardType: TextInputType.number,
-                obscureText: true,
+                controller: _controllerSenha,
                 decoration: InputDecoration(
-                  errorText: _erroSenhaCadastro,
+                    errorText: _errorSenha,
                     border: const OutlineInputBorder(),
                     labelText: 'Digite sua senha'),
               ),
             ),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: ElevatedButton(
-                        onPressed: (){
-                          // salva usuario aqui
-                          if(_validarCampos()){
-                            proximaTela(context, const Home());
-                          }
-                        }, child: const Text('Cadastrar',style: TextStyle(fontSize: 24),)),
+                  child: ElevatedButton(
+                    onPressed: _validarCampos,
+                    child: const Text('Salvar'),
                   ),
                 ),
-              ],
+                Text(_menssagem),
+              ]),
             )
           ],
         ),
       ),
     );
+  }
+
+  _validarCampos() {
+    String nome = _controllerNome.text;
+    String email = _controllerEmail.text;
+    String senha = _controllerSenha.text;
+    if (nome.isNotEmpty && nome.length >= 5) {
+      _errorName = null;
+      if (email.isNotEmpty) {
+        if (email.endsWith('@gmail.com')) {
+          _errorEmail = null;
+          if (senha.isNotEmpty) {
+            setState(() {
+              _errorSenha = null;
+            });
+            Usuario usuario = Usuario();
+            usuario.nome = nome;
+            usuario.email = email;
+            usuario.senha = senha;
+
+            _cadastrarUsuario(usuario);
+          } else {
+            setState(() {
+              _errorSenha = 'Este campo nao pode ficar em vazio';
+            });
+          }
+        } else {
+          setState(() {
+            _errorEmail = 'Email precisa terminar com "@gmail.com"!';
+          });
+        }
+      } else {
+        setState(() {
+          _errorEmail = 'Email invalido!';
+        });
+      }
+    } else {
+      setState(() {
+        _errorName = 'Esse compo precisa conter pelo menos 6 caracteres';
+      });
+    }
+  }
+
+  _cadastrarUsuario(Usuario usuario) async {
+    UserCredential? user = await _helpFirebaseAuth
+        .createUserWithEmailAndPassword(usuario.email, usuario.senha);
+    if (user?.user != null) {
+      //salvar dados usuario
+      String? id = user?.user?.uid;
+      salvarUsuario(id,usuario.toMap());
+      Navigator.pushNamedAndRemoveUntil(context, '/home',(_)=>false);
+    } else {
+      setState(() {
+        _menssagem = 'Não foi possivel cadastra usuario';
+      });
+    }
+  }
+  salvarUsuario(String? doc,Map<String,dynamic> map){
+    if(doc != null){
+      _helpFirebaseCloudFirestore.saveDataUser(doc, map);
+    }
   }
 }

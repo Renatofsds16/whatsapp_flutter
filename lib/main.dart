@@ -1,9 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:whatsapp_flutter/pages/Home.dart';
 import 'package:whatsapp_flutter/pages/Login.dart';
-import 'package:whatsapp_flutter/rotas/GenerateRoute.dart';
+import 'package:whatsapp_flutter/rotas/generateRoutes.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -16,7 +14,7 @@ void main() async {
     MaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
-      onGenerateRoute: RouteGenerate.generateRoute,
+      onGenerateRoute: GenerateRoutes.generateRoutes,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true
