@@ -134,18 +134,21 @@ class _CadastroState extends State<Cadastro> {
   }
 
   _cadastrarUsuario(Usuario usuario) async {
-    UserCredential? user = await _helpFirebaseAuth
-        .createUserWithEmailAndPassword(usuario.email, usuario.senha);
-    if (user?.user != null) {
-      //salvar dados usuario
-      String? id = user?.user?.uid;
-      salvarUsuario(id,usuario.toMap());
-      Navigator.pushNamedAndRemoveUntil(context, '/home',(_)=>false);
-    } else {
-      setState(() {
-        _menssagem = 'Não foi possivel cadastra usuario';
-      });
+    if(usuario.email != null){
+      UserCredential? user = await _helpFirebaseAuth
+          .createUserWithEmailAndPassword(usuario.email!, usuario.senha);
+      if (user?.user != null) {
+        //salvar dados usuario
+        String? id = user?.user?.uid;
+        salvarUsuario(id,usuario.toMap());
+        Navigator.pushNamedAndRemoveUntil(context, '/home',(_)=>false);
+      } else {
+        setState(() {
+          _menssagem = 'Não foi possivel cadastra usuario';
+        });
+      }
     }
+
   }
   salvarUsuario(String? doc,Map<String,dynamic> map){
     if(doc != null){

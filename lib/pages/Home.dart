@@ -27,6 +27,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
+    _verificarUsuarioLogado();
     recuperarDadosUsuario();
     super.initState();
   }
@@ -41,7 +42,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
           indicatorColor: Colors.white,
           controller: _tabController,
           labelColor: Colors.white,
-          labelStyle: TextStyle(fontSize: 16),
+          labelStyle: const TextStyle(fontSize: 16),
           tabs: const [
           Tab(
             text: 'Conversas',
@@ -60,11 +61,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
         ),
         actions: [
           PopupMenuButton(
+            iconColor: Colors.white,
             onSelected: escolhaUsuario,
               itemBuilder: (context){
                 return opcoes.map(
                         (String item){
                           return PopupMenuItem(
+
                             value: item,
                               child: Text(item)
                           );
@@ -94,6 +97,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
     }
     if(escolha == opcoes[1]){
       _helpFirebaseAuth.exitUser();
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+  _verificarUsuarioLogado() async {
+    User? user = await _helpFirebaseAuth.currentUser();
+    if (user == null) {
       Navigator.pushReplacementNamed(context, '/login');
     }
   }

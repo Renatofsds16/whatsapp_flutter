@@ -18,4 +18,22 @@ class HelpFirebaseCloudFirestore{
      QuerySnapshot querySnapshot = await _firebaseFirestore.collection('usuarios').get();
      return querySnapshot;
   }
+  Future atualizarDados(String doc,Map<String,dynamic> map)async{
+
+    _firebaseFirestore
+        .collection('usuarios')
+        .doc(doc)
+        .update(map);
+  }
+  Future recuperarDados(String doc)async{
+    DocumentSnapshot snap = await _firebaseFirestore
+        .collection('usuarios')
+        .doc(doc)
+        .get().then((snapshot){
+          return snapshot;
+    });
+
+
+  }
+
 }

@@ -136,16 +136,19 @@ class _LoginState extends State<Login> {
   }
 
   _loginUser(Usuario usuario) async {
-    UserCredential user = await _helpFirebaseAuth
-        .loginUser(usuario.email, usuario.senha)
-        .then((firebaseUser) {
-      Navigator.pushReplacementNamed(context, '/home');
-      return firebaseUser;
-    }).catchError((error){
-      setState(() {
-        _errorEmail = 'credenciais invalidas';
+    if(usuario.email != null){
+      UserCredential user = await _helpFirebaseAuth
+          .loginUser(usuario.email!, usuario.senha)
+          .then((firebaseUser) {
+        Navigator.pushReplacementNamed(context, '/home');
+        return firebaseUser;
+      }).catchError((error){
+        setState(() {
+          _errorEmail = 'credenciais invalidas';
+        });
       });
-    });
+    }
+
 
   }
 
